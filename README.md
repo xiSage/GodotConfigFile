@@ -10,14 +10,13 @@ GodotConfigFile/
 ├── .gitattributes                      # Git attributes
 ├── .gitignore                          # Git ignore rules
 ├── LICENSE.txt                         # MIT License
+├── README.md                           # This file
 ├── .vscode/                            # VSCode configuration
 │   ├── launch.json
 │   └── tasks.json
 ├── GodotConfigFile/                    # Core library directory
 │   ├── ConfigFile.cs                   # Core ConfigFile class
-│   ├── ConfigFile.csproj               # Library project (netstandard2.0)
-│   ├── GodotConfigFile.csproj          # Library project (netstandard2.0)
-│   └── README.md                       # This file
+│   └── GodotConfigFile.csproj          # Library project (netstandard2.0)
 └── GodotConfigFileTests/               # Comprehensive test project
     ├── ConfigFileTests.cs              # xUnit test cases
     └── GodotConfigFileTests.csproj     # Test project (net8.0)
@@ -228,7 +227,7 @@ vsync=true
 ```bash
 cd GodotConfigFile
 # Build the main library project
-dotnet build ConfigFile.csproj
+dotnet build GodotConfigFile/GodotConfigFile.csproj
 # or build all projects in the directory
 dotnet build
 ```

@@ -13,13 +13,14 @@ GodotConfigFile/
 ├── .vscode/                            # VSCode configuration
 │   ├── launch.json
 │   └── tasks.json
-└── GodotConfigFile/                    # Core library directory
-    ├── ConfigFile.cs                   # Core ConfigFile class
-    ├── ConfigFile.csproj               # Library project (netstandard2.0)
-    ├── GodotConfigFile.csproj          # Library project (netstandard2.0)
-    ├── SimpleProgram.cs                # Test program
-    ├── SimpleTest.csproj               # Test project (net5.0)
-    └── README.md                       # This file
+├── GodotConfigFile/                    # Core library directory
+│   ├── ConfigFile.cs                   # Core ConfigFile class
+│   ├── ConfigFile.csproj               # Library project (netstandard2.0)
+│   ├── GodotConfigFile.csproj          # Library project (netstandard2.0)
+│   └── README.md                       # This file
+└── GodotConfigFileTests/               # Comprehensive test project
+    ├── ConfigFileTests.cs              # xUnit test cases
+    └── GodotConfigFileTests.csproj     # Test project (net8.0)
 ```
 
 ## Features
@@ -35,6 +36,9 @@ GodotConfigFile/
 - ✅ Default values support
 - ✅ .NET Standard 2.0 compatible
 - ✅ Independent library (no Godot dependency)
+- ✅ Comprehensive xUnit tests
+- ✅ Well-formatted config file parsing
+- ✅ Comment handling support
 
 ## Namespace
 
@@ -71,10 +75,10 @@ config.SetValue("graphics", "quality", "high");
 config.SetValue("graphics", "vsync", true);
 
 // Get values from sections
-int width = config.GetValue<int>("window", "width");
-int height = config.GetValue<int>("window", "height");
-string quality = config.GetValue<string>("graphics", "quality");
-bool vsync = config.GetValue<bool>("graphics", "vsync");
+int width = config.GetValueInSection<int>("window", "width");
+int height = config.GetValueInSection<int>("window", "height");
+string quality = config.GetValueInSection<string>("graphics", "quality");
+bool vsync = config.GetValueInSection<bool>("graphics", "vsync");
 ```
 
 ### Save and Load
@@ -232,26 +236,17 @@ dotnet build
 ### Run Tests
 
 ```bash
-cd GodotConfigFile
-# Run the test program
-dotnet run --project SimpleTest.csproj
+# Run the comprehensive xUnit tests
+dotnet test --project GodotConfigFileTests/GodotConfigFileTests.csproj
+
+# Run tests with coverage report
+cd GodotConfigFileTests
+dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=./lcov.info
 ```
 
 ## License
 
 MIT License - See LICENSE.txt for details
-
-## Compatibility
-
-- **Target Framework**: .NET Standard 2.0
-- **Compatible Runtimes**:
-  - .NET Core 2.0+
-  - .NET Framework 4.6.1+
-  - Mono 5.4+
-- **Platforms**:
-  - Windows
-  - Linux
-  - macOS
 
 ## Code Examples
 
@@ -270,10 +265,10 @@ config.SetValue("settings", "volume", 0.8f);
 config.SetValue("settings", "fullscreen", true);
 
 // Get values
-string title = config.GetValue<string>("game", "title");
-string version = config.GetValue<string>("game", "version");
-float volume = config.GetValue<float>("settings", "volume", 1.0f); // With default
-bool fullscreen = config.GetValue<bool>("settings", "fullscreen");
+string title = config.GetValueInSection<string>("game", "title");
+string version = config.GetValueInSection<string>("game", "version");
+float volume = config.GetValueInSection<float>("settings", "volume", 1.0f); // With default
+bool fullscreen = config.GetValueInSection<bool>("settings", "fullscreen");
 
 Console.WriteLine($"Game: {title} {version}");
 Console.WriteLine($"Settings: Volume={volume}, Fullscreen={fullscreen}");
@@ -295,8 +290,8 @@ config.Save("app_config.cfg");
 var loaded = new ConfigFile();
 loaded.Load("app_config.cfg");
 
-string name = loaded.GetValue<string>("app", "name");
-float version = loaded.GetValue<float>("app", "version");
+string name = loaded.GetValueInSection<string>("app", "name");
+float version = loaded.GetValueInSection<float>("app", "version");
 
 Console.WriteLine($"Loaded: {name} v{version}");
 ```
@@ -355,3 +350,6 @@ This library is a C# implementation of Godot Engine's `config_file.cpp`, designe
 6. More intuitive API for working with the default section
 7. Independent library (no Godot dependency)
 8. Uses modern C# features
+9. Renamed `GetValue(section, key)` to `GetValueInSection(section, key)` to avoid method overload ambiguity
+10. Improved comment handling (supports #, ;, and // comments)
+11. More robust parsing of malformed config files

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 xiSage
+// MIT License
+// https://github.com/xiSage/GodotConfigFile
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -30,8 +34,8 @@ namespace GodotConfig
             SetValue(DEFAULT_SECTION, key, value);
         }
 
-        // Methods to get values with type safety
-        public T GetValue<T>(string section, string key, T defaultValue = default)
+        // Methods to get values with type safety - renamed to avoid ambiguity
+        public T GetValueInSection<T>(string section, string key, T defaultValue = default)
         {
             if (string.IsNullOrEmpty(section))
                 section = DEFAULT_SECTION;
@@ -53,7 +57,7 @@ namespace GodotConfig
 
         public T GetValue<T>(string key, T defaultValue = default)
         {
-            return GetValue(DEFAULT_SECTION, key, defaultValue);
+            return GetValueInSection(DEFAULT_SECTION, key, defaultValue);
         }
 
         // Methods to check existence
@@ -149,7 +153,7 @@ namespace GodotConfig
                 line = line.Trim();
 
                 // Skip empty lines and comments
-                if (string.IsNullOrEmpty(line) || line.StartsWith("#") || line.StartsWith("//"))
+                if (string.IsNullOrEmpty(line) || line.StartsWith("#") || line.StartsWith("//") || line.StartsWith(";;"))
                     continue;
 
                 // Check for section header
@@ -163,10 +167,31 @@ namespace GodotConfig
                 int equalsIndex = line.IndexOf('=');
                 if (equalsIndex > 0)
                 {
-                    string key = line.Substring(0, equalsIndex).Trim();
-                    string value = line.Substring(equalsIndex + 1).Trim();
-
-                    SetValue(currentSection, key, ParseValue(value));
+                    // Check for comments after equals sign
+                    string lineBeforeComment = line;
+                    
+                    // Handle comments
+                    int commentIndex = lineBeforeComment.IndexOf('#');
+                    if (commentIndex != -1)
+                        lineBeforeComment = lineBeforeComment.Substring(0, commentIndex);
+                    
+                    commentIndex = lineBeforeComment.IndexOf(';');
+                    if (commentIndex != -1)
+                        lineBeforeComment = lineBeforeComment.Substring(0, commentIndex);
+                    
+                    commentIndex = lineBeforeComment.IndexOf("//");
+                    if (commentIndex != -1)
+                        lineBeforeComment = lineBeforeComment.Substring(0, commentIndex);
+                    
+                    // Find equals index in clean line
+                    int cleanEqualsIndex = lineBeforeComment.IndexOf('=');
+                    if (cleanEqualsIndex > 0)
+                    {
+                        string key = lineBeforeComment.Substring(0, cleanEqualsIndex).Trim();
+                        string value = lineBeforeComment.Substring(cleanEqualsIndex + 1).Trim();
+                        
+                        SetValue(currentSection, key, ParseValue(value));
+                    }
                 }
             }
         }

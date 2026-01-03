@@ -295,42 +295,6 @@ float version = loaded.GetValueInSection<float>("app", "version");
 Console.WriteLine($"Loaded: {name} v{version}");
 ```
 
-## Example Output
-
-```
-Testing Godot ConfigFile in C#...
-==================================
-
-Test 1: Basic functionality
-✓ Set and get values: name=Godot, version=3.4, is_stable=True, downloads=1000000
-
-Test 2: Sections
-✓ Set and get values from sections: window.width=1920, window.height=1080, graphics.quality=high, graphics.vsync=True
-
-Test 3: Existence checks
-✓ Key existence: hasName=True, hasNonExistent=False
-✓ Section existence: hasWindow=True, hasNonExistentSection=False
-
-Test 4: Save and Load
-✓ Saved to string: 137 characters
-✓ Loaded from string: name=Godot, window.width=1920
-
-Test 5: Merge
-✓ Merged config: name=Godot Engine, author=Godot Contributors, window.width=3840, window.vsync=True
-
-Test 6: Erase methods
-✓ Erase key: hasVsync=False
-✓ Erase section: hasWindowSection=False
-✓ Clear config: hasSections=False
-
-Test 7: Default values
-✓ Default values: defaultName=default_value, defaultValue=0
-
-==================================
-All tests passed! ConfigFile is working correctly.
-==================================
-```
-
 ## Contributing
 
 Feel free to submit issues, fork the repository and send pull requests.

@@ -28,8 +28,7 @@ GodotConfigFile/
 - ✅ Support for sections
 - ✅ Check existence of keys and sections
 - ✅ Save to and load from files
-- ✅ Save to and load from streams
-- ✅ Merge config files
+- ✅ Parse from string and encode to text
 - ✅ Erase keys and sections
 - ✅ Clear all data
 - ✅ Default values support
@@ -38,6 +37,9 @@ GodotConfigFile/
 - ✅ Comprehensive xUnit tests
 - ✅ Well-formatted config file parsing
 - ✅ Comment handling support
+- ✅ Godot ConfigFile compatibility
+- ✅ Multi-line string support
+- ✅ Quoted key support
 
 ## Namespace
 
@@ -55,29 +57,17 @@ using GodotConfig;
 // Create a new ConfigFile instance
 var config = new ConfigFile();
 
-// Set values in the default section
-config.SetValue("name", "Godot");
-config.SetValue("version", 3.4f);
-config.SetValue("is_stable", true);
-config.SetValue("downloads", 1000000L);
+// Set values in custom sections
+config.SetValue("player", "name", "Unnamed Player");
+config.SetValue("player", "health", 100);
+config.SetValue("graphics", "antialiasing", true);
+config.SetValue("graphics", "quality", "high");
 
 // Get values with type safety
-string name = config.GetValue<string>("name");
-float version = config.GetValue<float>("version");
-bool isStable = config.GetValue<bool>("is_stable");
-long downloads = config.GetValue<long>("downloads");
-
-// Set values in custom sections
-config.SetValue("window", "width", 1920);
-config.SetValue("window", "height", 1080);
-config.SetValue("graphics", "quality", "high");
-config.SetValue("graphics", "vsync", true);
-
-// Get values from sections
-int width = config.GetValueInSection<int>("window", "width");
-int height = config.GetValueInSection<int>("window", "height");
-string quality = config.GetValueInSection<string>("graphics", "quality");
-bool vsync = config.GetValueInSection<bool>("graphics", "vsync");
+string name = config.GetValue<string>("player", "name");
+int health = config.GetValue<int>("player", "health");
+bool antialiasing = config.GetValue<bool>("graphics", "antialiasing");
+string quality = config.GetValue<string>("graphics", "quality");
 ```
 
 ### Save and Load
@@ -85,11 +75,10 @@ bool vsync = config.GetValueInSection<bool>("graphics", "vsync");
 ```csharp
 using GodotConfig;
 using System.IO;
-using System.Text;
 
 var config = new ConfigFile();
-config.SetValue("name", "Godot");
-config.SetValue("window", "width", 1920);
+config.SetValue("player", "name", "Unnamed Player");
+config.SetValue("graphics", "antialiasing", true);
 
 // Save to file
 config.Save("config.cfg");
@@ -97,44 +86,28 @@ config.Save("config.cfg");
 // Load from file
 var loadedConfig = new ConfigFile();
 loadedConfig.Load("config.cfg");
-
-// Save to stream
-using (var stream = new MemoryStream())
-using (var writer = new StreamWriter(stream, Encoding.UTF8))
-{
-    config.SaveToStream(writer);
-    writer.Flush();
-    // Use the stream...
-}
-
-// Load from stream
-using (var stream = new MemoryStream())
-using (var reader = new StreamReader(stream, Encoding.UTF8))
-{
-    loadedConfig.LoadFromStream(reader);
-    // Use the loaded config...
-}
 ```
 
-### Merge Configs
+### Parse and Encode to Text
 
 ```csharp
 using GodotConfig;
 
-var config1 = new ConfigFile();
-config1.SetValue("name", "Godot");
-config1.SetValue("version", 3.4f);
+var config = new ConfigFile();
 
-var config2 = new ConfigFile();
-config2.SetValue("name", "Godot Engine");  // Will overwrite
-config2.SetValue("author", "Contributors");  // New key
-config2.SetValue("window", "width", 3840);  // Will overwrite
+// Parse from string
+config.Parse(@"[player]
+name=""Unnamed Player""
+health=100
 
-// Merge with overwrite
-config1.Merge(config2, overwrite: true);
+[graphics]
+antialiasing=true
+quality=high");
 
-// Merge without overwrite
-config1.Merge(config2, overwrite: false);
+// Encode to text
+string configText = config.EncodeToText();
+
+// Use the encoded text...
 ```
 
 ### Check Existence
@@ -143,16 +116,17 @@ config1.Merge(config2, overwrite: false);
 using GodotConfig;
 
 var config = new ConfigFile();
-config.SetValue("name", "Godot");
-config.SetValue("window", "width", 1920);
-
-// Check if a key exists
-bool hasName = config.HasKey("name");
-bool hasWindowWidth = config.HasKey("window", "width");
+config.SetValue("player", "name", "Unnamed Player");
+config.SetValue("player", "health", 100);
 
 // Check if a section exists
-bool hasWindowSection = config.HasSection("window");
+bool hasPlayerSection = config.HasSection("player");
 bool hasGraphicsSection = config.HasSection("graphics");
+
+// Check if a key exists in a section
+bool hasName = config.HasSectionKey("player", "name");
+bool hasHealth = config.HasSectionKey("player", "health");
+bool hasQuality = config.HasSectionKey("player", "quality");  // False
 ```
 
 ### Erase and Clear
@@ -161,16 +135,15 @@ bool hasGraphicsSection = config.HasSection("graphics");
 using GodotConfig;
 
 var config = new ConfigFile();
-config.SetValue("name", "Godot");
-config.SetValue("window", "width", 1920);
-config.SetValue("window", "height", 1080);
+config.SetValue("player", "name", "Unnamed Player");
+config.SetValue("player", "health", 100);
+config.SetValue("graphics", "antialiasing", true);
 
-// Erase a key
-config.EraseKey("name");
-config.EraseKey("window", "height");
+// Erase a key in a section
+config.EraseSectionKey("player", "health");
 
 // Erase a section
-config.EraseSection("window");
+config.EraseSection("graphics");
 
 // Clear all data
 config.Clear();
@@ -182,17 +155,17 @@ config.Clear();
 using GodotConfig;
 
 var config = new ConfigFile();
-config.SetValue("name", "Godot");
-config.SetValue("window", "width", 1920);
-config.SetValue("window", "height", 1080);
+config.SetValue("player", "name", "Unnamed Player");
+config.SetValue("player", "health", 100);
+config.SetValue("graphics", "antialiasing", true);
 config.SetValue("graphics", "quality", "high");
 
 // Get all sections
-var sections = config.GetSections();
+var sections = config.GetSections();  // ["player", "graphics"]
 
 // Get all keys in a section
-var windowKeys = config.GetKeys("window");
-var defaultKeys = config.GetKeys();
+var playerKeys = config.GetSectionKeys("player");  // ["name", "health"]
+var graphicsKeys = config.GetSectionKeys("graphics");  // ["antialiasing", "quality"]
 ```
 
 ## Installation
@@ -225,7 +198,6 @@ vsync=true
 ### Build the Library
 
 ```bash
-cd GodotConfigFile
 # Build the main library project
 dotnet build GodotConfigFile/GodotConfigFile.csproj
 # or build all projects in the directory
@@ -239,7 +211,6 @@ dotnet build
 dotnet test --project GodotConfigFileTests/GodotConfigFileTests.csproj
 
 # Run tests with coverage report
-cd GodotConfigFileTests
 dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=./lcov.info
 ```
 
@@ -303,16 +274,30 @@ Feel free to submit issues, fork the repository and send pull requests.
 
 This library is a C# implementation of Godot Engine's `config_file.cpp`, designed to be used as an independent library without any Godot dependencies.
 
-## Differences from Godot's C++ Implementation
+## Compatibility with Godot
 
-1. Uses C# generics for type safety
-2. Follows C# naming conventions (PascalCase methods, camelCase parameters)
-3. Supports more .NET types by default
-4. Uses `TextReader` and `TextWriter` for stream operations
-5. All operations are instance-based (no static methods)
-6. More intuitive API for working with the default section
-7. Independent library (no Godot dependency)
-8. Uses modern C# features
-9. Renamed `GetValue(section, key)` to `GetValueInSection(section, key)` to avoid method overload ambiguity
-10. Improved comment handling (supports #, ;, and // comments)
-11. More robust parsing of malformed config files
+This library is designed to be fully compatible with Godot Engine's `config_file.cpp` implementation. It:
+
+- Follows Godot's config file format exactly
+- Supports all Godot config file features
+- Produces files that can be read by Godot
+- Can read files produced by Godot
+- Has a similar API to Godot's ConfigFile
+
+### API Comparison
+
+| Godot C++ Method | C# Method |
+|------------------|-----------|
+| `setValue(section, key, value)` | `SetValue(string section, string key, object value)` |
+| `getValue(section, key, default)` | `GetValue<T>(string section, string key, T defaultValue = default)` |
+| `has_section(section)` | `HasSection(string section)` |
+| `has_section_key(section, key)` | `HasSectionKey(string section, string key)` |
+| `erase_section(section)` | `EraseSection(string section)` |
+| `erase_section_key(section, key)` | `EraseSectionKey(string section, string key)` |
+| `get_sections()` | `GetSections()` |
+| `get_section_keys(section)` | `GetSectionKeys(string section)` |
+| `clear()` | `Clear()` |
+| `load(path)` | `Load(string path)` |
+| `parse(data)` | `Parse(string data)` |
+| `save(path)` | `Save(string path)` |
+| `encode_to_text()` | `EncodeToText()` |

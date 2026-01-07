@@ -1,3 +1,5 @@
+[![NuGet Version](https://img.shields.io/nuget/v/xiSage.GodotConfigFile)](https://www.nuget.org/packages/xiSage.GodotConfigFile)
+
 # Godot ConfigFile for C#
 
 A C# implementation of Godot's `config_file.cpp` that follows C# conventions and targets .NET Standard 2.0.

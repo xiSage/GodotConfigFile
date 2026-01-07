@@ -40,11 +40,13 @@ GodotConfigFile/
 - ✅ Godot ConfigFile compatibility
 - ✅ Multi-line string support
 - ✅ Quoted key support
+- ✅ Array support
+- ✅ Dictionary support
 
 ## Namespace
 
 ```csharp
-using GodotConfig;
+using GodotConfigFile;
 ```
 
 ## Usage
@@ -52,16 +54,16 @@ using GodotConfig;
 ### Basic Usage
 
 ```csharp
-using GodotConfig;
+using GodotConfigFile;
 
 // Create a new ConfigFile instance
 var config = new ConfigFile();
 
 // Set values in custom sections
-config.SetValue("player", "name", "Unnamed Player");
-config.SetValue("player", "health", 100);
-config.SetValue("graphics", "antialiasing", true);
-config.SetValue("graphics", "quality", "high");
+config.SetValue<string>("player", "name", "Unnamed Player");
+config.SetValue<int>("player", "health", 100);
+config.SetValue<bool>("graphics", "antialiasing", true);
+config.SetValue<string>("graphics", "quality", "high");
 
 // Get values with type safety
 string name = config.GetValue<string>("player", "name");
@@ -73,12 +75,12 @@ string quality = config.GetValue<string>("graphics", "quality");
 ### Save and Load
 
 ```csharp
-using GodotConfig;
+using GodotConfigFile;
 using System.IO;
 
 var config = new ConfigFile();
-config.SetValue("player", "name", "Unnamed Player");
-config.SetValue("graphics", "antialiasing", true);
+config.SetValue<string>("player", "name", "Unnamed Player");
+config.SetValue<bool>("graphics", "antialiasing", true);
 
 // Save to file
 config.Save("config.cfg");
@@ -91,13 +93,13 @@ loadedConfig.Load("config.cfg");
 ### Parse and Encode to Text
 
 ```csharp
-using GodotConfig;
+using GodotConfigFile;
 
 var config = new ConfigFile();
 
 // Parse from string
 config.Parse(@"[player]
-name=""Unnamed Player""
+name=\"Unnamed Player\"
 health=100
 
 [graphics]
@@ -113,11 +115,11 @@ string configText = config.EncodeToText();
 ### Check Existence
 
 ```csharp
-using GodotConfig;
+using GodotConfigFile;
 
 var config = new ConfigFile();
-config.SetValue("player", "name", "Unnamed Player");
-config.SetValue("player", "health", 100);
+config.SetValue<string>("player", "name", "Unnamed Player");
+config.SetValue<int>("player", "health", 100);
 
 // Check if a section exists
 bool hasPlayerSection = config.HasSection("player");
@@ -132,12 +134,12 @@ bool hasQuality = config.HasSectionKey("player", "quality");  // False
 ### Erase and Clear
 
 ```csharp
-using GodotConfig;
+using GodotConfigFile;
 
 var config = new ConfigFile();
-config.SetValue("player", "name", "Unnamed Player");
-config.SetValue("player", "health", 100);
-config.SetValue("graphics", "antialiasing", true);
+config.SetValue<string>("player", "name", "Unnamed Player");
+config.SetValue<int>("player", "health", 100);
+config.SetValue<bool>("graphics", "antialiasing", true);
 
 // Erase a key in a section
 config.EraseSectionKey("player", "health");
@@ -152,13 +154,13 @@ config.Clear();
 ### Get All Sections and Keys
 
 ```csharp
-using GodotConfig;
+using GodotConfigFile;
 
 var config = new ConfigFile();
-config.SetValue("player", "name", "Unnamed Player");
-config.SetValue("player", "health", 100);
-config.SetValue("graphics", "antialiasing", true);
-config.SetValue("graphics", "quality", "high");
+config.SetValue<string>("player", "name", "Unnamed Player");
+config.SetValue<int>("player", "health", 100);
+config.SetValue<bool>("graphics", "antialiasing", true);
+config.SetValue<string>("graphics", "quality", "high");
 
 // Get all sections
 var sections = config.GetSections();  // ["player", "graphics"]
@@ -223,22 +225,22 @@ MIT License - See LICENSE.txt for details
 ### Creating and Using ConfigFile
 
 ```csharp
-using GodotConfig;
+using GodotConfigFile;
 using System;
 
 var config = new ConfigFile();
 
 // Set values
-config.SetValue("game", "title", "My Game");
-config.SetValue("game", "version", "1.0.0");
-config.SetValue("settings", "volume", 0.8f);
-config.SetValue("settings", "fullscreen", true);
+config.SetValue<string>("game", "title", "My Game");
+config.SetValue<string>("game", "version", "1.0.0");
+config.SetValue<float>("settings", "volume", 0.8f);
+config.SetValue<bool>("settings", "fullscreen", true);
 
 // Get values
-string title = config.GetValueInSection<string>("game", "title");
-string version = config.GetValueInSection<string>("game", "version");
-float volume = config.GetValueInSection<float>("settings", "volume", 1.0f); // With default
-bool fullscreen = config.GetValueInSection<bool>("settings", "fullscreen");
+string title = config.GetValue<string>("game", "title");
+string version = config.GetValue<string>("game", "version");
+float volume = config.GetValue<float>("settings", "volume", 1.0f); // With default
+bool fullscreen = config.GetValue<bool>("settings", "fullscreen");
 
 Console.WriteLine($"Game: {title} {version}");
 Console.WriteLine($"Settings: Volume={volume}, Fullscreen={fullscreen}");
@@ -247,11 +249,11 @@ Console.WriteLine($"Settings: Volume={volume}, Fullscreen={fullscreen}");
 ### Saving and Loading
 
 ```csharp
-using GodotConfig;
+using GodotConfigFile;
 
 var config = new ConfigFile();
-config.SetValue("app", "name", "ConfigTest");
-config.SetValue("app", "version", 1.2f);
+config.SetValue<string>("app", "name", "ConfigTest");
+config.SetValue<float>("app", "version", 1.2f);
 
 // Save to file
 config.Save("app_config.cfg");
@@ -260,8 +262,8 @@ config.Save("app_config.cfg");
 var loaded = new ConfigFile();
 loaded.Load("app_config.cfg");
 
-string name = loaded.GetValueInSection<string>("app", "name");
-float version = loaded.GetValueInSection<float>("app", "version");
+string name = loaded.GetValue<string>("app", "name");
+float version = loaded.GetValue<float>("app", "version");
 
 Console.WriteLine($"Loaded: {name} v{version}");
 ```
@@ -288,7 +290,7 @@ This library is designed to be fully compatible with Godot Engine's `config_file
 
 | Godot C++ Method | C# Method |
 |------------------|-----------|
-| `setValue(section, key, value)` | `SetValue(string section, string key, object value)` |
+| `setValue(section, key, value)` | `SetValue<T>(string section, string key, T value)` |
 | `getValue(section, key, default)` | `GetValue<T>(string section, string key, T defaultValue = default)` |
 | `has_section(section)` | `HasSection(string section)` |
 | `has_section_key(section, key)` | `HasSectionKey(string section, string key)` |

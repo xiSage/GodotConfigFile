@@ -1,0 +1,21 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{csproj,props,targets,slnx,json,yml,yaml}]
+indent_size = 2
+
+[*.cs]
+# The library deliberately uses one flat namespace, with folders only for organising the source
+# (see the architecture notes in the README), so a namespace/folder mismatch is expected here.
+dotnet_diagnostic.IDE0130.severity = none
+
+# Primary constructors are used where they read well (the immutable value nodes, the geometry records) and
+# explicit constructors everywhere else, so the suggestion to convert one into the other is switched off.
+dotnet_diagnostic.IDE0290.severity = none

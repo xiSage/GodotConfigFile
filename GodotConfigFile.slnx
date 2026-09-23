@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="GodotConfigFile/GodotConfigFile.csproj" />
   <Project Path="GodotConfigFileTests/GodotConfigFileTests.csproj" />
+  <Project Path="GodotConfigFile.AotSmoke/GodotConfigFile.AotSmoke.csproj" />
 </Solution>

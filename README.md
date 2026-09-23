@@ -201,6 +201,7 @@ until it is moved over.
 | --- | --- |
 | [`docs/godot-configfile-spec.md`](docs/godot-configfile-spec.md) | The full grammar, derived from the Godot source, including every quirk and the file/line it comes from. |
 | [`docs/compat-deviations.md`](docs/compat-deviations.md) | Every deliberate difference from Godot, with the test that pins it down. |
+| [`docs/releasing.md`](docs/releasing.md) | How a release is published, through NuGet trusted publishing. |
 
 ## License
 

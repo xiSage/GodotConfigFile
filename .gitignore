@@ -364,3 +364,6 @@ FodyWeavers.xsd
 
 # Trae
 .trae/
+# Local backup of the Chinese spec before it was translated to English.
+docs/.godot-configfile-spec.zh.md.bak
+

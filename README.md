@@ -174,6 +174,27 @@ guaranteed to parse back. Resources are never loaded: `Resource(...)`, `SubResou
 `Object(...)` become opaque `Variant.Resource` / `Variant.Object` nodes (deviation D7), so a file that references a
 resource that does not exist still parses.
 
+## Upgrading from 0.x
+
+1.0 is a rewrite, so the API changed. The old version read files line by line and handed back `object`; this one
+parses the format and hands back a typed model.
+
+| 0.x | 1.0 |
+| --- | --- |
+| `new ConfigFile()` then `Load(path)` / `Parse(text)` | `ConfigFile.Load(path)` / `ConfigFile.Parse(text)`, returning a `ConfigFileDocument` |
+| `GetValue(section, key, default)` and `GetValue<T>(section, key, default)` | `document.GetValue<T>(section, key, default)`, with no string-to-number conversion |
+| `GetSections()` | `document.SectionNames` |
+| `GetSectionKeys(section)` | `document.GetSection(section)?.KeyNames` |
+| `HasSection` / `HasSectionKey` | `document.HasSection` / `section.ContainsKey` |
+| `SetValue`, `EraseSection`, `EraseSectionKey`, `Clear` | gone: the model is read-only, and `Merge` composes documents |
+| `Save` / `EncodeToText` | gone: this library only reads |
+| a value was `bool`, `int`, `float`, `string`, `object[]`, `SortedDictionary<string, object>` | a `Variant` node: `Variant.Bool`, `Variant.Int`, `Variant.Float`, `Variant.Str`, `Variant.Array`, `Variant.Dictionary`, … |
+
+The one known consumer (`GodotEngineForCommandPalette`, still pinned to 0.3.0) has four call sites to update —
+`new ConfigFile()` twice, `Load`, `GetSections()` and two non-generic `GetValue` calls. That migration has **not**
+happened yet: this release changes the library only, and the consumer keeps working against the published 0.3.0
+until it is moved over.
+
 ## Documentation
 
 | Document | Contents |

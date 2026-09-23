@@ -1,8 +1,9 @@
-name: CI/CD
+name: CI
 
 on:
   push:
     branches: [ master ]
+    tags: [ 'v*' ]
   pull_request:
     branches: [ master ]
   workflow_dispatch:
@@ -10,49 +11,88 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Setup .NET 10.0
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 10.0.x
-    
+
     - name: Restore dependencies
       run: dotnet restore
-    
-    - name: Build
-      run: dotnet build --no-restore
-    
-    - name: Test
-      run: dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage"
-    
-  build-nuget:
-    runs-on: ubuntu-latest
-    needs: test
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup .NET 10.0
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 10.0.x
-    
-    - name: Restore dependencies
-      run: dotnet restore
-    
+
+    - name: Check formatting
+      run: dotnet format --severity info --verify-no-changes
+
     - name: Build
       run: dotnet build --no-restore -c Release
-    
+
+    - name: Test
+      run: dotnet test --no-build -c Release --verbosity normal --collect:"XPlat Code Coverage"
+
+    - name: Upload coverage
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage
+        path: '**/TestResults/**'
+
+  aot-check:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
+
+    - name: Install native AOT prerequisites
+      run: sudo apt-get update && sudo apt-get install -y clang zlib1g-dev
+
+    - name: Publish the smoke app with native AOT
+      run: >
+        dotnet publish GodotConfigFile.AotSmoke/GodotConfigFile.AotSmoke.csproj
+        -c Release -r linux-x64 -o ./aot-smoke
+
+    - name: Run the smoke app
+      run: ./aot-smoke/GodotConfigFile.AotSmoke
+
+  pack:
+    runs-on: ubuntu-latest
+    needs: [ test, aot-check ]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --no-restore -c Release
+
     - name: Pack
-      run: dotnet pack --no-build -c Release --output ./nuget-packages
-    
-    - name: Upload NuGet packages as artifacts
+      run: dotnet pack GodotConfigFile/GodotConfigFile.csproj --no-build -c Release --output ./nuget-packages
+
+    - name: Upload NuGet package as an artifact
       uses: actions/upload-artifact@v4
       with:
         name: nuget-packages
         path: ./nuget-packages
-    
 
+    - name: Push to NuGet
+      if: startsWith(github.ref, 'refs/tags/v')
+      run: >
+        dotnet nuget push ./nuget-packages/*.nupkg
+        --api-key ${{ secrets.NUGET_API_KEY }}
+        --source https://api.nuget.org/v3/index.json
+        --skip-duplicate

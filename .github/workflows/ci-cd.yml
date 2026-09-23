@@ -34,7 +34,7 @@ jobs:
 
     - name: Upload coverage
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: coverage
         path: '**/TestResults/**'
@@ -90,7 +90,7 @@ jobs:
       run: dotnet pack GodotConfigFile/GodotConfigFile.csproj --no-build -c Release --output ./nuget-packages
 
     - name: Upload NuGet package as an artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: nuget-packages
         path: ./nuget-packages

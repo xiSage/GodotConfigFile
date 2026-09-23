@@ -1,0 +1,44 @@
+version: 2
+
+updates:
+  # The library has no third-party runtime dependency, so this only ever sees the test tooling and the smoke app.
+  # The directories glob covers GodotConfigFile, GodotConfigFileTests and GodotConfigFile.AotSmoke; the root entry
+  # is there for the day a Directory.Packages.props shows up.
+  - package-ecosystem: nuget
+    directories:
+      - "/"
+      - "/GodotConfigFile*"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps)"
+    labels:
+      - dependencies
+    groups:
+      # Minor and patch bumps arrive as one pull request; a major bump still gets its own, where it can be read
+      # carefully.
+      test-tooling:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(ci)"
+    labels:
+      - dependencies
+    groups:
+      actions:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
